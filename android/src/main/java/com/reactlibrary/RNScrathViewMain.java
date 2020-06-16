@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableMap;
@@ -44,7 +45,7 @@ public class RNScrathViewMain extends RelativeLayout {
                 ViewGroup.LayoutParams.MATCH_PARENT));
         this.addView(imagePattern);
 
-        imageScratched.setVisibility(INVISIBLE);
+        imageScratched.setVisibility(View.INVISIBLE);
         imagePattern.setVisibility(View.INVISIBLE);
 
         imagePattern.setOnScratchCallback(new ScrathImageView.OnScratchCallback() {
@@ -53,7 +54,7 @@ public class RNScrathViewMain extends RelativeLayout {
                 ReactContext reactContext = (ReactContext) getContext();
                 if (reactContext != null) {
                     if (percentage >= revealPercent) {
-                        if(!isImageScratchRevealed) {
+                        if (!isImageScratchRevealed) {
                             isImageScratchRevealed = true;
 
                             WritableMap event = Arguments.createMap();
@@ -61,6 +62,7 @@ public class RNScrathViewMain extends RelativeLayout {
                                     getId(),
                                     RNScratchImageViewManager.ON_REVEALED,
                                     event);
+                            imagePattern.setScratchAll(true);
                         }
                     } else {
                         WritableMap event = Arguments.createMap();
@@ -73,9 +75,10 @@ public class RNScrathViewMain extends RelativeLayout {
                     }
                 }
             }
+
             @Override
             public void onDetach(boolean fingerDetach) {
-                imageScratched.setVisibility(VISIBLE);
+                imageScratched.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -93,9 +96,13 @@ public class RNScrathViewMain extends RelativeLayout {
                 .execute(uri);
     }
 
-    public void setImagePattern(String uri) {
-        new DownloadImageTask(false)
-                .execute(uri);
+    public void setImagePattern(String resourceName) {
+//        new DownloadImageTask(false)
+//                .execute(uri);
+        int imageResourceId = getResources().getIdentifier(resourceName, "drawable", getContext().getPackageName());
+        Bitmap icon = BitmapFactory.decodeResource(getContext().getResources(), imageResourceId);
+        imagePattern.setScratchBitmap(icon);
+        imagePatternLoadEnd = true;
     }
 
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
@@ -118,23 +125,24 @@ public class RNScrathViewMain extends RelativeLayout {
         }
 
         protected void onPostExecute(Bitmap result) {
-            if(isImageScratched) {
+            if (isImageScratched) {
                 imageScratched.setImageBitmap(scaleBitmap(result, getWidth(), getHeight()));
                 imageScratchedLoadEnd = true;
-            } else {
-                imagePattern.setScratchBitmap(result);
-                imagePatternLoadEnd = true;
             }
+//            else {
+//                imagePattern.setScratchBitmap(result);
+//                imagePatternLoadEnd = true;
+//            }
 
-            if(imageScratchedLoadEnd && imagePatternLoadEnd) {
-                imagePattern.setVisibility(VISIBLE);
+            if (imageScratchedLoadEnd && imagePatternLoadEnd) {
+                imagePattern.setVisibility(View.VISIBLE);
 
                 // Retraso un poco la imagen de fondo, porque la imagePattern tarda un poco en cargarla
                 final Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        imageScratched.setVisibility(VISIBLE);
+                        imageScratched.setVisibility(View.VISIBLE);
                     }
                 }, 300);
 

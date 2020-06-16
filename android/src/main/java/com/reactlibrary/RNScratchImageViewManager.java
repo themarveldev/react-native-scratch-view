@@ -50,9 +50,9 @@ public class RNScratchImageViewManager extends SimpleViewManager<RNScrathViewMai
     }
 
     @ReactProp(name = "imagePattern")
-    public void setImagePattern(final RNScrathViewMain view, final ReadableMap value) {
+    public void setImagePattern(final RNScrathViewMain view, final String value) {
         if (view != null) {
-            view.setImagePattern(value.getString(("uri")));
+            view.setImagePattern(value);
         }
     }
 
